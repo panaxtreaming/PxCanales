@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PANX GO — Guía de Canales Completa</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 24px;
+    color: #1a1a1a;
+  }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  /* Encabezado */
+  .header {
+    background: #0a5c36;
+    border-radius: 10px;
+    padding: 22px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .header h1 { margin: 0; font-size: 26px; }
+  .header .sub { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  .header .vence { font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; }
+
+  /* Controles */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .controls input, .controls select {
+    padding: 12px 14px;
+    border: 1px solid #cfd6db;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .controls input { flex: 1; min-width: 220px; }
+  .controls input:focus, .controls select:focus { border-color: #0a5c36; box-shadow: 0 0 0 3px rgba(10,92,54,0.15); }
+  .controls select { min-width: 220px; cursor: pointer; }
+
+  /* Tarjeta de sección */
+  .section-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 22px;
+  }
+  .section-card.hidden { display: none; }
+
+  .section-bar {
+    background: #e8edf0;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid #d0d7dc;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .section-bar .title { font-size: 16px; font-weight: 700; color: #0a5c36; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #f2f5f7;
+    color: #0a5c36;
+    font-weight: 700;
+    border-bottom: 1px solid #d0d7dc;
+  }
+  th:first-child { width: 60px; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e4e8eb; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 700; color: #0a5c36; }
+  tr.hidden { display: none; }
+
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    color: #7a848c;
+    font-size: 15px;
+    display: none;
+  }
+  .no-results.visible { display: block; }
+
+  .footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: #7a848c;
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e4e7;
+  }
+
+  /* ============================
+     ESTILOS DE IMPRESIÓN / PDF
+     ============================ */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .controls { display: none; }
+    .section-card {
+      box-shadow: none;
+      border: 1px solid #d0d7dc;
+      page-break-inside: auto;
+      page-break-before: always;   /* Cada sección empieza en hoja nueva */
+    }
+    .section-card:first-of-type { page-break-before: auto; } /* La primera no lleva salto */
+    .section-card.hidden { display: block !important; }
+    tr.hidden { display: table-row !important; }
+    .section-bar { position: static; page-break-after: avoid; }
+    .footer-note { display: none; }
+    .no-results { display: none !important; }
+
+    /* Evitar que una fila se parta entre dos páginas */
+    tr { page-break-inside: avoid; }
+
+    /* Forzar colores de fondo al imprimir */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>PANX GO — Guía de Canales</h1>
+      <p class="sub">Catálogo oficial optimizado para visualización móvil</p>
+    </div>
+    <div class="vence">Vence: 27/11/2026</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="🔍 Buscar canal...">
+    <select id="categorySelect">
+      <option value="all">Todas las categorías</option>
+    </select>
+  </div>
+
+  <div id="sectionsContainer"></div>
+
+  <div class="no-results" id="noResults">No se encontraron canales con ese criterio.</div>
+
+  <div class="footer-note">PANAXTREAMING — Catálogo oficial · Vence: 27/11/2026</div>
+</div>
+
+<script>
+// ============================================================
+// DATOS COMPLETOS DEL CATÁLOGO
+// ============================================================
+const data = [
+  // --- NUEVAS SECCIONES DE DEPORTES ---
+  {
+    icon: "🌟⚽",
+    title: "DIRECTV SPORTS (DSUPORTS)",
+    channels: [
+      "AR | DSPORTS 1 HD (81W)","AR | DSPORTS 2 HD (81W)","DSPORTS · CL · SD*",
+      "DSPORTS + | CL SD*","DSPORTS + | CL HD*","DSPORTS + | VE HD*",
+      "DSPORTS 1 | PE HD","DSPORTS 1 | VE HD*","DSPORTS 1 · UY · HD",
+      "DSPORTS 2 · CL · SD*","DSPORTS 2 · CL · HD*","DSPORTS 2 | PE HD",
+      "DSPORTS 2 | VE HD*","DSPORTS 2 · UY · HD","DSPORTS + · AR · HD (81W)",
+      "DSPORTS + · CL · SD*","DSPORTS + | PE HD","DSPORTS 4K"
+    ]
+  },
+  {
+    icon: "🌟⚽",
+    title: "ESPN (TODAS LAS SEÑALES)",
+    channels: [
+      "ESPN 01 | AR HD","ESPN 02 | AR HD","ESPN 03 | AR HD","ESPN 04 | AR HD",
+      "ESPN 05 | AR HD","ESPN 06 | AR HD","ESPN 07 | AR HD","ESPN EXTRA | AR HD",
+      "ESPN SUR | HD","ESPN SUR | SD","ESPN 2 | SUR HD","ESPN 2 | SUR SD",
+      "ESPN 3 | SUR HD","ESPN 4 | SUR HD","ESPN 5 | SUR HD","ESPN 6 | SUR HD",
+      "ESPN 7 | SUR HD","ESPN PREMIUM | ARGENTINA HD","ESPN DEPORTES | USA HD",
+      "ESPN COLOMBIA HD","ESPN MEXICO HD"
+    ]
+  },
+  {
+    icon: "🌟⚽",
+    title: "FOX SPORTS / FOX DEPORTES",
+    channels: [
+      "FOX SPORTS 1 | SUR HD","FOX SPORTS 2 | SUR HD","FOX SPORTS 3 | SUR HD",
+      "FOX SPORTS ARGENTINA HD","FOX SPORTS MEXICO HD","FOX SPORTS PREMIUM ARGENTINA HD",
+      "FOX DEPORTES USA HD"
+    ]
+  },
+  {
+    icon: "🌟⚽",
+    title: "TYC SPORTS Y LIGA ARGENTINA",
+    channels: [
+      "TYC SPORTS | ARGENTINA HD","TYC SPORTS | INTERNACIONAL",
+      "LIGA PROFESIONAL FUTBOL AR","FUTBOL ARGENTINO HD"
+    ]
+  },
+  {
+    icon: "🌟⚽",
+    title: "DSCOVERT / TIGO / WIN / BEIN / MOVISTAR",
+    channels: [
+      "WIN SPORTS + | COLOMBIA HD","WIN SPORTS | COLOMBIA HD","TIGO SPORTS | BOLIVIA HD",
+      "TIGO SPORTS | PARAGUAY HD","TIGO SPORTS | COLOMBIA HD",
+      "BEIN SPORTS 1 EN ESPAÑOL HD","BEIN SPORTS 2 EN ESPAÑOL HD","BEIN SPORTS USA HD",
+      "MOVISTAR LIGA DE CAMPEONES HD","MOVISTAR DEPORTES HD","DSORTS MOTOR HD",
+      "TNT SPORTS | ARGENTINA HD","TNT SPORTS | CHILE HD"
+    ]
+  },
+  // --- SECCIONES ORIGINALES ---
+  {
+    icon: "🌟⚽",
+    title: "DEPORTES Y EVENTOS ESPECIALES",
+    channels: [
+      "EVENTOS MLB | MLS | NBA | NFL",
+      "MLB 01","MLB 02","MLB 03","MLB 04","MLB 05","MLB 06","MLB 07","MLB 08","MLB 09",
+      "EVENTOS BOX | UFC | WWE",
+      "BOX, PPV BOX | TITAN","GLORY HD","HBO BOXING HD","LUCHA PLUS HD","ONE HD",
+      "PFL HD","SWERVE COMBAT HD","TNA WRESTLING HD","WWE SUPERSTAR HD",
+      "A FAZENDA CAM 1","La granja op1","La granja op2 24/7"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "MÚSICA",
+    channels: [
+      "BANDAMAX • HD","CONCERT CHANNEL • SD","DANCE TV HD","DEEP HOUSE DISTRICT • HD",
+      "DJ NEXT HD","HOUSE FLOOR • HD","HTV • SD","M20 • SD","MI MUSICA HITS • HD",
+      "MI MUSICA POPULAR • HD","MI MUSICA REGGAETON • HD","MI MUSICA ROMANTICA • SD",
+      "MI MUSICA SALSA • HD","MIX CHANNEL","MTV HD","MTV SD","NOW 70's • HD","NOW 80s",
+      "NUBEH TV","OLDIES HITS TV","RETRO PLUS 1 HD","RUIDOS TV HD","RUMBA TV",
+      "SIN LIMITES • SD","STINGRAY CLASSIC ROCK","STINGRAY CLASSICA","STINGRAY CMUSIC HD",
+      "STINGRAY CONCERTS HD","STINGRAY DJAZZ","STINGRAY FLACHBACK 70s",
+      "STINGRAY GREATEST HITS","STINGRAY HOT COUNTRY","STINGRAY MUSIC 90s",
+      "STINGRAY MUSIC ROCK","STINGRAY NATURE ESCAPE HD","STINGRAY QELLO CONCERT HD",
+      "STINGRAY REMEMBER THE 80s","TELEHIT MUSICA PLUS HD","TELEHIT MUSICA HD",
+      "TELEHIT • HD","TELENOSTALGIA • HD","TOTALMUSIC 2000s • HD","TOTALMUSIC 80s • HD",
+      "TOTALMUSIC • HD"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "INFANTIL",
+    channels: [
+      "CLAN SD","DISCOVERY KIDS HD","DISCOVERY KIDS SD","DISNEY CHANNEL HD",
+      "DISNEY CHANNEL SD","DISNEY JR HD","DISNEY JR SD","DUCK TV PLUS HD","DUCK TV HD",
+      "FIXyFOXI HD","FMH KIDS HD","GOKU TV HD","NICK JR HD","NICK JR SD","NICK HD",
+      "NICKELODEON HD","NICKELODEON SD","PAKA PAKA SD"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "NOTICIAS",
+    channels: [
+      "24H ESPAÑA • HD","BBC WORLD • HD","BLOOMBERG PLUS • HD","CBS NEWS • HD",
+      "CNBC WORLD • HD","CNN EN ESPAÑOL • HD","CNN INTERNATIONAL • HD","CNN USA • HD",
+      "DW ESPAÑOL • HD","FOX NEWS • HD","FRANCE 24 español","HISPANTV HD","RT • HD",
+      "THE WEATHER CHANNEL • HD"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "RELIGIÓN",
+    channels: [
+      "ALIENTO VISION","BETHEL TV","CRISTOVISION","ENLACE TV","EWTN",
+      "FARO DE SANTIDAD TV","LA VOZ DE MARÍA","MARIA VISION","MILAGROS TV HD",
+      "SOPHIA TV","TELEVIDA HD","TU UNIVERSO HD"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "TELENOVELAS",
+    channels: [
+      "AZ CORAZON HD","AZ CORAZON SD","NOVA | ES HD","NOVELAS DE SIEMRPE HD",
+      "PASIONES HD","RCN NOVELAS SD","TLNOVELAS | AR","TLNOVELAS | MX SD",
+      "TLNOVELAS | MX HD","TNT NOVELAS HD","TNT NOVELAS SD"
+    ]
+  },
+  {
+    icon: "♻️",
+    title: "VARIEDADES",
+    channels: [
+      "A LA COCINA HD","CGTN EN ESPAÑOL HD","DISCOVERY H&H | LATAM SD",
+      "DISCOVERY H&H | MX HD","DISCOVERY H&H | SUR HD","DISCOVERY H&H SD",
+      "E! ENTERTAIMENT HD","E! ENTERTAIMENT SD","EL GOURMET","EL GOURMET HD",
+      "FAILARMY HD","FASHION TV HD","FMH ATLAS HD","FOOD NETWORK HD","HGTV","HGTV HD",
+      "HOGAR TV","HOLA!TV","LATINANGELS HD","LIFETIME","RAI 2","RAI INT",
+      "SHOW BUSINESS TV HD","STAR TVE HD","SUN CHANNEL HD","TELEMUNDO INTERNACIONAL HD",
+      "TELEMUNDO INTERNACIONAL SD","TELETUR","TLC HD","TLC SD","VISIT FLORIDA"
+    ]
+  },
+  {
+    icon: "🇦🇷",
+    title: "ARGENTINA",
+    channels: [
+      "AR • 5TV","AR • A24","AR • AMERICA TV HD","AR • ARGENTINISIMA","AR • BRAGADO TV HD",
+      "AR • C5N","AR • CANAL 26","AR • CANAL GEN TV","AR • CIUDAD MAGAZINE",
+      "AR • CRONICA TV HD","AR • DEPORTV","AR • EL NUEVE HD","AR • EL TRECE INT HD",
+      "AR • EL TRECE HD","AR • ENCUENTRO","AR • ENCUENTRO • SD","AR • GARAGE TV",
+      "AR • LA NACIÓN","AR • MULTIVISION","AR • NET TV HD","AR • TELECENTRO SD",
+      "AR • TELEFE HD","AR • TN HD","AR • TV PUBLICA HD","AR • VOLVER"
+    ]
+  },
+  {
+    icon: "🇦🇷",
+    title: "ARGENTINA | REGIONALES",
+    channels: [
+      "AR REG • CANAL 12 POSADAS","AR REG • CANAL 12 PUERTO MADRYN",
+      "AR REG • CANAL 12 TUCUMAN","AR REG • CANAL 2 MAR DE PLATA",
+      "AR REG • CANAL 2 MISIONES","AR REG • CANAL 3 LA PAMPA",
+      "AR REG • CANAL 4 MISIONES","AR REG • CANAL 4 POSADAS",
+      "AR REG • CANAL 5 CVI Puerto Iguazú","AR REG • CANAL 7 JUJUY",
+      "AR REG • CANAL 7 NEUQUEN","AR REG • CANAL 7 SALTA",
+      "AR REG • CANAL 7 SANTANDER DEL ESTERO","AR REG • CANAL 9 NORTE MISIONERO",
+      "AR REG • CANAL AMERICA TUCUMAN","AR REG • CANAL INTEL ENTRE RIOS",
+      "AR REG • CANAL TRECE LA RIOJA","AR REG • NEO TV BUENOS AIRES"
+    ]
+  },
+  {
+    icon: "🇧🇴",
+    title: "BOLIVIA",
+    channels: [
+      "SEO TV DOCUMENTALES H265","FB TV HD","FB TV SD","BO • ABYA YALA HD",
+      "BO • AGENDA MINERA HD | Potosi","BO • ASI ES TV","BO • ATB LP HD",
+      "BO • BOLIVIA TV 7.1 HD","BO • BOLIVISION | LPZ HD","BO • BOLIVISION | CBBA HD",
+      "BO • CADENA A HD","BO • CEACOM | OR HD","BO • CORAL TV (OR)","BO • CTV HD",
+      "BO • CVC | El Alto HD","BO • DELTA TV | LP HD","BO • DTV HD","BO • F-10 HD",
+      "BO • GIGAVISION LP HD","BO • GOGOPLAY","BO • PALENQUE TV HD","BO • PAT | LP HD",
+      "BO • PLUS TLT TARIJA","BO • PODER DE DIOS","BO • PTV","BO • RED SIGLO XXI - Tv",
+      "BO • RED UNO (CBBA) HD"
+    ]
+  },
+  {
+    icon: "🇻🇪",
+    title: "VENEZUELA",
+    channels: [
+      "VE • 123 TV SD","VE • ABEJALES TV HD","VE • AGROTENDENCIA TV HD","VE • AGUACATE TV SD",
+      "VE • ALBA TV SD","VE • ALCANCE TV HD","VE • ANTVE SD","VE • AS3 SPORTS TV",
+      "VE • BASEBALL NETWORK HD","VE • BTA TV HD","VE • BYM SPORTS 2 HD","VE • BYM SPORTS HD",
+      "VE • CANAL 21 TACHIRA HD","VE • CANAL C DEL ZULIA HD","VE • CANAL DIPLOMATICO HD",
+      "VE • CANAL I HD","VE • CANAL ONCE HD","VE • CATATUMBO TV SD","VE • CHIVACOA TV HD",
+      "VE • COLOMBEIA SD","VE • CONCIENCIA TV SD","VE • CONTACTV HD","VE • ESPERANZA TV HD",
+      "VE • ESPORTS MAX HD","VE • FANB SD","VE • GLOBOVISION HD","VE • GLOBOVISION SD",
+      "VE • GRANDE TV HD","VE • GUARO TV HD","VE • HR MAX HD","VE • INTER TV HD",
+      "VE • ITALIANISSIMO","VE • IVC HD","VE • KANDELA TV HD","VE • LA IGUANA TV HD",
+      "VE • LA LIGA","VE • LA PURA CREMA HD","VE • LARA EN REDES HD","VE • LATINA TV HD",
+      "VE • LGD TV HD","VE • MAGICA TV HD","VE • MAGICATV KIDS HD","VE • MAS NETWORK HD",
+      "VE • MAS TALK HD","VE • MAX ANIME HD","VE • MAXIMA TV HD","VE • MDA TV HD",
+      "VE • MERIDIANO TV HD","VE • MERIDIANO TV SD","VE • MONAGAS VISION HD",
+      "VE • MOVIE FE HD","VE • NET CHANNEL HD","VE • NORTEÑA TV HD",
+      "VE • NOTICIAS VENEVISION HD","VE • NOVELISSIMA HD","VE • ONZA TV HD",
+      "VE • OXIGENO TV HD","VE • PANAVISION HD","VE • PLOUS TV HD","VE • PORTU TV HD",
+      "VE • PROMAR TV HD","VE • REALTOR TV HD","VE • SHOWVEN SD","VE • SIEMBRA TV HD",
+      "VE • SOMOS TV HD","VE • SPORTS MAX NEWS HD","VE • SUPERTRENDY HD","VE • TAM SD",
+      "VE • TELEARAGUA HD","VE • TELEBOCONO SD","VE • TELECENTRO HD","VE • TELECOLOR HD",
+      "VE • TELESUR HD","VE • TELESUR SD","VE • TELEVEN HD","VE • TELEVEN fHD",
+      "VE • TELEVEN SD","VE • TELEVISORA DEL TACHIRA | TRT SD","VE • TLT HD","VE • TLT SD",
+      "VE • TOROCOCO TV HD","VE • TRV ARAGUA HD","VE • TU TV HD","VE • TV ANZOATEGUI SD",
+      "VE • TV FAMILIA HD","VE • TV ISLA HD","VE • TV LLANOS HD","VE • TV OASIS HD",
+      "VE • TVES SD","VE • TVM HD","VE • TVO ORIENTE SD","VE • TVS HD","VE • TVV HD",
+      "VE • UN24 HD","VE • UNITV HD","VE • VALE TV HD","VE • VENEVISION INT HD",
+      "VE • VENEVISION PLUS HD","VE • VENEVISION HD","VE • VENEVISION SD",
+      "VE • VEPACO TV SD","VE • VIDA STEREO","VE • VIVE HD","VE • VTV HD","VE • VTV SD",
+      "VE • WATA VISION HD","VE • YATVO HD"
+    ]
+  },
+  {
+    icon: "🎬",
+    title: "24/7 TV GO",
+    channels: [
+      "24/7 | ALADDIN","24/7 | ALVIN Y LAS ARDILLAS","24/7 | BABYS","24/7 | BOB ESPONJA",
+      "24/7 | BONANZA","24/7 | BUGS BUNNY","24/7 | CARICATURAS CLÁSICAS",
+      "24/7 | CASO CERRADO","24/7 | CHESPIRITO","24/7 | CLASICOS DEL CINE 1",
+      "24/7 | CLASICOS DEL CINE 2","24/7 | CLÁSICOS DE DISNEY","24/7 | COMEDIA",
+      "24/7 | CONDE PÁTULA","24/7 | DINOSAURIOS","24/7 | DISNEY PIXAR",
+      "24/7 | DOCTORA JUGUETES","24/7 | DON GATO Y SU PANDILLA","24/7 | DRAGON BALL",
+      "24/7 | DRAGON BALL GT","24/7 | DRAGON BALL SUPER","24/7 | EL CHAPULIN COLORADO",
+      "24/7 | EL CHAVO DEL OCHO","24/7 | EL ENCANTADOR DE PERROS","24/7 | EL PRINCIPE DEL RAP",
+      "24/7 | EL SHOW DE SNOOPY","24/7 | EL ZORRO | 1990","24/7 | JESSIE","24/7 | JONNY QUEST",
+      "24/7 | LA FAMILIA P. LUCHE","24/7 | LA PANTERA ROSA","24/7 | LA ROSA DE GUADALUPE",
+      "24/7 | LA TERCERA EN DISCORDIA","24/7 | LAS TORTUGAS NINJAS",
+      "24/7 | LO QUE CALLAMOS LAS MUJERES","24/7 | LOONEY TUNES","24/7 | LOS PICAPIEDRA",
+      "24/7 | LOS PITUFOS","24/7 | Los Simpson","24/7 | LOS SNORKS","24/7 | LOS TRES CHIFLADOS",
+      "24/7 | MANNY A LA OBRA","24/7 | MI BELLA GENIO","24/7 | Mr. BEAN","24/7 | MUNDO INFANTIL",
+      "24/7 | POWER RANGERS","24/7 | SÁBADO GIGANTE","24/7 | THUNDERCATS","24/7 | TOM & JERRY",
+      "24/7 | TURCAS","24/7 | UN SHOW MÁS","ALERTA AEROPUERTO 2","CINE TVGO 01 HD",
+      "CINE TVGO 02 HD","CINE TVGO 03 HD","CINE TVGO 05 HD"
+    ]
+  },
+  {
+    icon: "🌍",
+    title: "PAÍSES Y SECCIONES DISPONIBLES",
+    channels: [
+      "Brasil","Chile","Chile | Regionales","Canada","Caribe","Centroamérica","Colombia",
+      "Costa Rica","Ecuador","El Salvador","España","Francia","Guatemala","México",
+      "Panamá","Paraguay","Perú","Portugal","Rep. Dominicana","Uruguay","USA | Latinos",
+      "USA | Locals"
+    ]
+  }
+];
+
+// ============================================================
+// RENDERIZADO
+// ============================================================
+const container = document.getElementById('sectionsContainer');
+const searchInput = document.getElementById('searchInput');
+const categorySelect = document.getElementById('categorySelect');
+const noResults = document.getElementById('noResults');
+
+// Poblar el select con categorías
+data.forEach((sec, idx) => {
+  const opt = document.createElement('option');
+  opt.value = idx;
+  opt.textContent = `${sec.icon} ${sec.title}`;
+  categorySelect.appendChild(opt);
+});
+
+// Crear las tarjetas de sección
+data.forEach((sec, idx) => {
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.dataset.category = idx;
+
+  const bar = document.createElement('div');
+  bar.className = 'section-bar';
+  bar.innerHTML = `<span>${sec.icon}</span><span class="title">${sec.title}</span>`;
+  card.appendChild(bar);
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead>
+      <tr><th>#</th><th>Nombre del Canal</th></tr>
+    </thead>
+    <tbody></tbody>
+  `;
+  const tbody = table.querySelector('tbody');
+
+  sec.channels.forEach((ch, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i + 1}</td><td>${ch}</td>`;
+    tr.dataset.search = ch.toLowerCase();
+    tbody.appendChild(tr);
+  });
+
+  card.appendChild(table);
+  container.appendChild(card);
+});
+
+// ============================================================
+// FILTRO
+// ============================================================
+function filtrar() {
+  const query = searchInput.value.trim().toLowerCase();
+  const selectedCat = categorySelect.value;
+  const cards = document.querySelectorAll('.section-card');
+  let totalVisibles = 0;
+
+  cards.forEach(card => {
+    const catIdx = card.dataset.category;
+    const catMatch = (selectedCat === 'all' || selectedCat === catIdx);
+    const rows = card.querySelectorAll('tbody tr');
+    let visiblesEnCard = 0;
+
+    rows.forEach(tr => {
+      const textMatch = tr.dataset.search.includes(query);
+      if (catMatch && textMatch) {
+        tr.classList.remove('hidden');
+        visiblesEnCard++;
+      } else {
+        tr.classList.add('hidden');
+      }
+    });
+
+    if (visiblesEnCard > 0) {
+      card.classList.remove('hidden');
+      totalVisibles += visiblesEnCard;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  noResults.classList.toggle('visible', totalVisibles === 0);
+}
+
+searchInput.addEventListener('input', filtrar);
+categorySelect.addEventListener('change', filtrar);
+
+// ============================================================
+// GENERAR PDF AUTOMÁTICAMENTE AL ABRIR
+// ============================================================
+window.onload = () => {
+  // Pequeña espera para asegurar que todo esté renderizado
+  setTimeout(() => window.print(), 500);
+};
+</script>
+</body>
+</html>
